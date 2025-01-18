@@ -32,12 +32,44 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-mongoose_1.default.connect("mongodb+srv://dhruv:devforgoogle@cluster0.ak8nu.mongodb.net/");
-const UserSchema = new mongoose_1.Schema({
-    username: { type: String, unique: true },
-    password: String,
+const dotenv_1 = __importDefault(require("dotenv"));
+// Load environment variables
+dotenv_1.default.config();
+// MongoDB URI from environment variables
+const mongoUri = process.env.MONGODB_URI;
+// Validate that the MongoDB URI is provided
+if (!mongoUri) {
+    throw new Error("MONGODB_URI is not defined in the environment variables. Please set it in the .env file.");
+}
+// Connect to MongoDB
+mongoose_1.default
+    .connect(mongoUri) // No need to specify `useNewUrlParser` and `useUnifiedTopology`
+    .then(() => {
+    console.log("Connected to MongoDB successfully.");
+})
+    .catch((err) => {
+    console.error("Error connecting to MongoDB:", err.message);
+    process.exit(1); // Exit process with failure
 });
+// Define User schema with validation and uniqueness
+const UserSchema = new mongoose_1.Schema({
+    username: {
+        type: String,
+        required: [true, "Username is required"],
+        unique: true,
+        trim: true
+    },
+    password: {
+        type: String,
+        required: [true, "Password is required"],
+        minlength: [6, "Password must be at least 6 characters long"]
+    },
+});
+// Export the User model
 exports.UserModel = (0, mongoose_1.model)("User", UserSchema);
