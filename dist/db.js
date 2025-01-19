@@ -36,40 +36,53 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserModel = void 0;
+exports.ContentModel = exports.UserModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const dotenv_1 = __importDefault(require("dotenv"));
-// Load environment variables
 dotenv_1.default.config();
-// MongoDB URI from environment variables
 const mongoUri = process.env.MONGODB_URI;
-// Validate that the MongoDB URI is provided
 if (!mongoUri) {
     throw new Error("MONGODB_URI is not defined in the environment variables. Please set it in the .env file.");
 }
-// Connect to MongoDB
 mongoose_1.default
-    .connect(mongoUri) // No need to specify `useNewUrlParser` and `useUnifiedTopology`
+    .connect(mongoUri)
     .then(() => {
     console.log("Connected to MongoDB successfully.");
 })
     .catch((err) => {
     console.error("Error connecting to MongoDB:", err.message);
-    process.exit(1); // Exit process with failure
+    process.exit(1);
 });
-// Define User schema with validation and uniqueness
 const UserSchema = new mongoose_1.Schema({
     username: {
         type: String,
         required: [true, "Username is required"],
         unique: true,
-        trim: true
+        trim: true,
     },
     password: {
         type: String,
         required: [true, "Password is required"],
-        minlength: [6, "Password must be at least 6 characters long"]
+        minlength: [6, "Password must be at least 6 characters long"],
     },
 });
-// Export the User model
 exports.UserModel = (0, mongoose_1.model)("User", UserSchema);
+const ContentSchema = new mongoose_1.Schema({
+    title: {
+        type: String,
+        required: [true, "title is required"],
+    },
+    link: String,
+    tags: [
+        {
+            type: mongoose_1.default.Types.ObjectId,
+            ref: "Tag",
+        },
+    ],
+    userId: {
+        type: mongoose_1.default.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+});
+exports.ContentModel = (0, mongoose_1.model)("Content", ContentSchema);
